@@ -1,0 +1,297 @@
+{
+  "front-version": "2.19.1",
+  "version": 3,
+  "nodes": [
+    {
+      "type": "Project",
+      "id": "a9462b69-4ab7-496b-aa32-0f1364dccc8e",
+      "lastModified": "2018-09-19T16:58:58.706+09:00",
+      "name": "DigitalBanking"
+    },
+    {
+      "uriEditor": true,
+      "type": "Request",
+      "method": {
+        "requestBody": true,
+        "link": "http://tools.ietf.org/html/rfc7231#section-4.3.3",
+        "name": "POST"
+      },
+      "body": {
+        "formBody": {
+          "overrideContentType": true,
+          "encoding": "application/x-www-form-urlencoded"
+        },
+        "bodyType": "Text",
+        "autoSetLength": true,
+        "textBody": "grant_type=password&username=${\"id\"}&password=${\"password\"}"
+      },
+      "headersType": "Form",
+      "uri": {
+        "query": {
+          "delimiter": "&",
+          "items": []
+        },
+        "scheme": {
+          "secure": true,
+          "name": "https",
+          "version": "V11"
+        },
+        "host": "${\"uniturl\"}",
+        "path": "/${\"managercellname\"}/__token"
+      },
+      "id": "777fd8b6-e840-401e-a641-d7f88659bc9f",
+      "lastModified": "2018-09-03T17:07:48.461+09:00",
+      "name": "01 Get admin user token",
+      "headers": [
+        {
+          "enabled": true,
+          "name": "Accept",
+          "value": "application/json"
+        },
+        {
+          "enabled": true,
+          "name": "Content-Type",
+          "value": "text/plain"
+        }
+      ],
+      "assertions": [
+        {
+          "comparison": "Equals",
+          "subject": "ResponseStatus",
+          "path": "code",
+          "value": "200"
+        }
+      ],
+      "metaInfo": {
+        "IS_FROM_HISTORY": "7fad1a8e-6732-4183-a7b3-7d2be695a5df"
+      },
+      "parentId": "a9462b69-4ab7-496b-aa32-0f1364dccc8e"
+    },
+    {
+      "type": "Request",
+      "method": {
+        "requestBody": true,
+        "link": "http://tools.ietf.org/html/rfc7231#section-4.3.3",
+        "name": "POST"
+      },
+      "body": {
+        "formBody": {
+          "overrideContentType": true,
+          "encoding": "application/x-www-form-urlencoded"
+        },
+        "bodyType": "Text",
+        "autoSetLength": true,
+        "textBody": "{\n    \"username\": \"${\"usercellname\"}\",\n    \"password\": \"personium\"\n}"
+      },
+      "headersType": "Form",
+      "uri": {
+        "query": {
+          "delimiter": "&",
+          "items": []
+        },
+        "scheme": {
+          "secure": true,
+          "name": "https",
+          "version": "V11"
+        },
+        "host": "${\"uniturl\"}",
+        "path": "/${\"managercellname\"}/__/Engine/users"
+      },
+      "id": "c846a108-76c8-46ff-b233-075a5fa33c9c",
+      "lastModified": "2018-09-07T10:25:19.693+09:00",
+      "name": "02 Create user",
+      "headers": [
+        {
+          "enabled": true,
+          "name": "Authorization",
+          "value": "Bearer ${\"DigitalBanking\".\"01 Get admin user token\".\"response\".\"body\".\"access_token\"}"
+        },
+        {
+          "enabled": true,
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "metaInfo": {
+        "IS_FROM_HISTORY": null
+      },
+      "parentId": "a9462b69-4ab7-496b-aa32-0f1364dccc8e"
+    },
+    {
+      "type": "Request",
+      "method": {
+        "requestBody": true,
+        "link": "http://tools.ietf.org/html/rfc7231#section-4.3.3",
+        "name": "POST"
+      },
+      "body": {
+        "formBody": {
+          "overrideContentType": true,
+          "encoding": "application/x-www-form-urlencoded",
+          "items": [
+            {
+              "enabled": true,
+              "type": "Text",
+              "name": "LogUserId",
+              "value": "1234"
+            },
+            {
+              "enabled": true,
+              "type": "Text",
+              "name": "LogSec",
+              "value": "\"M\""
+            }
+          ]
+        },
+        "bodyType": "Text",
+        "autoSetLength": true,
+        "textBody": "{\n  \"LogUserId\": 1236,\n  \"LogSex\": \"M\",\n  \"TestAge\": 16\n}"
+      },
+      "headersType": "Form",
+      "uri": {
+        "query": {
+          "delimiter": "&",
+          "items": []
+        },
+        "scheme": {
+          "secure": true,
+          "name": "https",
+          "version": "V11"
+        },
+        "host": "${\"uniturl\"}",
+        "path": "/u-${\"usercellname\"}/${\"boxname\"}/${odataendpoint1}"
+      },
+      "id": "cc8e2744-dc37-402a-85da-db2a6cf2f621",
+      "lastModified": "2018-09-19T16:58:58.707+09:00",
+      "name": "03 Create an entry (Entity)",
+      "headers": [
+        {
+          "enabled": true,
+          "name": "Authorization",
+          "value": "Bearer ${\"DigitalBanking\".\"02 Create user\".\"response\".\"body\".\"access_token\"}"
+        },
+        {
+          "enabled": true,
+          "name": "Accept",
+          "value": "application/json"
+        },
+        {
+          "enabled": true,
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "metaInfo": {
+        "IS_FROM_HISTORY": null
+      },
+      "parentId": "a9462b69-4ab7-496b-aa32-0f1364dccc8e"
+    },
+    {
+      "uriEditor": true,
+      "type": "Request",
+      "method": {
+        "link": "http://tools.ietf.org/html/rfc7231#section-4.3.1",
+        "name": "GET"
+      },
+      "body": {
+        "formBody": {
+          "overrideContentType": true,
+          "encoding": "application/x-www-form-urlencoded"
+        },
+        "bodyType": "Text",
+        "autoSetLength": true,
+        "textBody": ""
+      },
+      "headersType": "Form",
+      "uri": {
+        "query": {
+          "delimiter": "&",
+          "items": [
+            {
+              "encoded": true,
+              "name": "$orderby",
+              "value": "dtstart asc"
+            },
+            {
+              "name": "$filter",
+              "value": "dtstart ge datetimeoffset'2018-04-30T15:00:00.000Z'"
+            },
+            {
+              "name": "$select",
+              "value": "LogUserId,logAge"
+            }
+          ]
+        },
+        "scheme": {
+          "secure": true,
+          "name": "https",
+          "version": "V11"
+        },
+        "host": "${\"uniturl\"}",
+        "path": "/u-${\"usercellname\"}/${\"boxname\"}/${odataendpoint1}"
+      },
+      "id": "3eba46fe-841e-4740-9437-fa25a229831f",
+      "lastModified": "2018-09-19T16:58:49.779+09:00",
+      "name": "04 Get list of data",
+      "headers": [
+        {
+          "enabled": true,
+          "name": "Authorization",
+          "value": "Bearer ${\"DigitalBanking\".\"02 Create user\".\"response\".\"body\".\"access_token\"}"
+        },
+        {
+          "enabled": true,
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "metaInfo": {
+        "IS_FROM_HISTORY": null
+      },
+      "parentId": "a9462b69-4ab7-496b-aa32-0f1364dccc8e"
+    },
+    {
+      "type": "Context",
+      "id": "c4009393-9233-4272-9d0c-92f1f41ffda2",
+      "lastModified": "2018-09-20T15:12:56.124+09:00",
+      "name": "DigitalBanking",
+      "variables": [
+        {
+          "enabled": true,
+          "name": "id",
+          "value": "***"
+        },
+        {
+          "enabled": true,
+          "name": "password",
+          "value": "***"
+        },
+        {
+          "enabled": true,
+          "name": "uniturl",
+          "value": "***"
+        },
+        {
+          "enabled": true,
+          "name": "managercellname",
+          "value": "***"
+        },
+        {
+          "enabled": true,
+          "name": "boxname",
+          "value": "***"
+        },
+        {
+          "enabled": true,
+          "name": "odataendpoint1",
+          "value": "***"
+        },
+        {
+          "enabled": true,
+          "name": "usercellname",
+          "value": "***"
+        }
+      ]
+    }
+  ]
+}

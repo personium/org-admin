@@ -1,9 +1,18 @@
 exports.adapterX = (function() {
     var adapter = adapter || {};
 
-    const USER_CELL_PREFIX = "u-";
+    const USER_CELL_PREFIX = "***";
 
-    const USER_ACCOUNT_NAME = "me";
+    const USER_ACCOUNT_NAME = "***";
+
+    const CREATE_BOX_NAME = "***";
+    const CREATE_BOX_SCHEMA_URL = "***";
+
+    const CREATE_ODATA_NAME1 = "***";
+    const CREATE_ODATA_NAME2 = "***";
+
+    const CREATE_ODATA_ENTITY_NAME1 = "**";
+    const CREATE_ODATA_ENTITY_NAME2 = "**";
 
     // Personium Unit's and App Cell's authentication information
     adapter.accInfo = require("acc_info").accInfo;
@@ -31,14 +40,6 @@ exports.adapterX = (function() {
         return reqLib.adapter.getDataTableOnUserCell(username, type).create(data);
     };
 
-    adapter.getUsersTableOnSysCell = function () {
-        /*
-         * Not needed for 1st stage.
-         * OData Service Collection of the App Cell this script is running on
-         */
-        return _p.as('client').cell().box().odata("OData").entitySet("directory");
-    };
-
     adapter.deleteUser = function(username) {
         var cellname = adapter.cellName(username);
 
@@ -50,55 +51,6 @@ exports.adapterX = (function() {
         var targetUnitUrl = adapter.accInfo.UNIT_URL;
         var unit = accessor.unit(targetUnitUrl);
         unit.ctl.cell.core.recursiveDelete(cellname);
-    };
-
-    adapter.getProfileOnUserCell = function(username) {
-        // Convert username (xxx) to cellname (u-xxx)
-        var cellname = adapter.cellName(username);
-        var accInfo = adapter.accInfo.APP_CELL_ADMIN_INFO;
-        var userMainBox = _p.as(accInfo).cell(cellname).box("__");
-        // Profile JSON
-        var jsonStr = userMainBox.getString("profile.json");
-
-        var profile = JSON.parse(jsonStr);
-        var ret = {
-            displayName: profile.DisplayName,
-            selfIntroduction: profile.Description,
-            profileImage: profile.Image
-        };
-        // 各属性
-        ret.birthday = _retrieveAttr(userMainBox, "birthday");
-        ret.sexId = _retrieveAttr(userMainBox, "sexId");
-        ret.customValue = _retrieveAttr(userMainBox, "customValue");
-        ret.profileImage = _retrieveAttr(userMainBox, "profileImage");
-        ret.height = parseFloat(_retrieveAttr(userMainBox, "height"));
-        ret.weight = parseFloat(_retrieveAttr(userMainBox, "weight"));
-        ret.displayName = _retrieveAttr(userMainBox, "displayName");
-        ret.selfIntroduction = _retrieveAttr(userMainBox, "selfIntroduction");	
-
-//20180420 nakamoto add start
-        var ret = [
-            "io.personium.client.DaoException: 200,",
-            JSON.stringify({
-                "d":{
-                "results": [{
-//20180424 nakamoto mod
-                   "displayName": ret.displayName,
-                   "birthday": ret.birthday,
-                   "customValue": ret.customValue,
-                   "sexId": ret.sexId,
-                   "weight": ret.weight,
-                   "height": ret.height,
-                   "selfIntroduction": ret.selfIntroduction,
-                   "profileImage": ret.profileImage
-                   }]
-                   }
-            })
-        ].join("");
-        throw new _p.PersoniumException(ret);
-//20180420 nakamoto add end
-        
-        return ret;
     };
 
     var _retrieveAttr = function (mainBox, key){
@@ -124,49 +76,6 @@ exports.adapterX = (function() {
         var cellToken = createCell.getToken();
 
         return cellToken;
-    };
-
-    adapter.updateUserProfile = function(username, info) {
-        // Convert username (xxx) to cellname (u-xxx)
-        var cellname = adapter.cellName(username);
-        var accInfo = adapter.accInfo.APP_CELL_ADMIN_INFO;
-        var userMainBox = _p.as(accInfo).cell(cellname).box("__");
-
-        /*
-         * Not needed for 1st stage.
-         * Sysセルの情報を更新
-         */
-        var directory = adapter.getUsersTableOnSysCell();
-        directory.merge(cellname, info, "*");
-
-        // ユーザセルの情報を更新
-        var profile = {
-            DisplayName: info.displayName,
-            Image: info.profileImage,
-            Description: info.selfIntroduction,
-        };
-
-        /*
-         * Must move this routine to the user's cell App Box.
-         * Access the installed box inside the user's cell.
-         */
-        userMainBox.put({
-            path: "profile.json",
-            data: JSON.stringify(profile),
-            contentType: "application/json",
-            charset: "utf-8",
-            etag: "*"
-        });
-        _updateAttr(userMainBox, info, "birthday");
-        _updateAttr(userMainBox, info, "sexId");
-        _updateAttr(userMainBox, info, "customValue");
-        _updateAttr(userMainBox, info, "height");
-        _updateAttr(userMainBox, info, "weight");
-        _updateAttr(userMainBox, info, "selfIntroduction");
-        _updateAttr(userMainBox, info, "displayName");
-        _updateAttr(userMainBox, info, "profileImage");
-        
-        return info;
     };
 
     var _updateAttr = function(mainBox, obj, key){
@@ -212,35 +121,24 @@ exports.adapterX = (function() {
         };
         cell.acl.set(param);
 
-        // Box 作成 - 彭さんに仕様（table nameなど）確認
-        var box1 = cell.ctl.box.create({Name: "***", Schema:"personium-localunit:/app-***/"});
-        var box2 = cell.ctl.box.create({Name: "***", Schema:"personium-localunit:/app-***/"});
+        // create Box
+        var box1 = cell.ctl.box.create({Name: CREATE_BOX_NAME, Schema:CREATE_BOX_SCHEMA_URL});
 
-        var od1 = box1.mkOData("odata");
-        var od2 = box2.mkOData("odata");
+        // create odata
+        var od1 = box1.mkOData(CREATE_ODATA_NAME1);
+        var od2 = box1.mkOData(CREATE_ODATA_NAME2);
+        // create EntityType
+        box1.odata(CREATE_ODATA_NAME1).schema.entityType.create({Name:CREATE_ODATA_ENTITY_NAME1});
+        box1.odata(CREATE_ODATA_NAME2).schema.entityType.create({Name:CREATE_ODATA_ENTITY_NAME2});
+        // create Property for Entity Type1
+        box1.odata(CREATE_ODATA_NAME1).schema.property.create({Name:"UserId","_EntityType.Name":CREATE_ODATA_ENTITY_NAME1,Type:"Edm.Int32",Nullable:false,DefaultValue:0});
+        // create Property for Entity Type 2
+        box1.odata(CREATE_ODATA_NAME2).schema.property.create({Name:"UserId","_EntityType.Name":CREATE_ODATA_ENTITY_NAME2,Type:"Edm.Int32",Nullable:false,DefaultValue:0});
+
         
-        box1.odata("odata").schema.entityType.create({Name:"data"});
-        box2.odata("odata").schema.entityType.create({Name:"data"});
-
-        // ExtCellとしてsys-sbf登録
-        // "personium-localunit:/sys-sbf/"
-        var appCellUrl = _p.as('client').cell().getUrl();
-        var sysSbfExtCell = cell.ctl.extCell.create({Url: appCellUrl.replace(targetUnitUrl, "personium-localunit:/")});
-
-        // sys-sbfにadminロールを付与
-        role.extCell.link(sysSbfExtCell);
-
-        // Directory 登録
-        var directory = adapter.getUsersTableOnSysCell();
-        directory.create({
-            __id: cellname,
-            displayName: params.displayName,
-            selfIntroduction: params.selfIntroduction,
-            birthday: params.birthday,
-            sexId: params.sexId,
-            height: params.height,
-            weight: params.weight
-        });
+        var roleOwner = cell.ctl.role.create({Name: "Owner","_Box.Name": CREATE_BOX_NAME});
+        var roleEditor = cell.ctl.role.create({Name: "Editor","_Box.Name": CREATE_BOX_NAME});
+        var roleViewer = cell.ctl.role.create({Name: "Viewer","_Box.Name": CREATE_BOX_NAME});
 
         // ********Get the token of the created cell********
         var cellToken = adapter.getToken(params);
@@ -250,7 +148,58 @@ exports.adapterX = (function() {
          */
         _createLogoutRule(cellname, cellToken.access_token);
 
+        // Set permissions for created OData
+        _setODataAcl(cellname, CREATE_ODATA_NAME1, cellToken.access_token);
+        _setODataAcl(cellname, CREATE_ODATA_NAME2, cellToken.access_token);
+
         return cellToken;
+    };
+
+    var _setODataAcl = function(cellname, odataname, token) {
+        var headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer " + token,
+            "X-HTTP-Method-Override": "ACL"
+        };
+        var url = adapter.accInfo.UNIT_URL + cellname + "/" + CREATE_BOX_NAME + "/" + odataname;
+        var body = [
+            "<?xml version=\"1.0\" encoding=\"utf-8\" ?>",
+                "<D:acl xmlns:p=\"urn:x-personium:xmlns\" xmlns:D=\"DAV:\" xml:base=\"" + adapter.accInfo.UNIT_URL + cellname + "/__role/" + CREATE_BOX_NAME + "/\">",
+                    "<D:ace>",
+                        "<D:principal>",
+                            "<D:href>Owner</D:href>",
+                        "</D:principal>",
+                        "<D:grant>",
+                            "<D:privilege>",
+                                "<p:all/>",
+                            "</D:privilege>",
+                        "</D:grant>",
+                    "</D:ace>",
+                    "<D:ace>",
+                        "<D:principal>",
+                            "<D:href>Editor</D:href>",
+                        "</D:principal>",
+                        "<D:grant>",
+                            "<D:privilege>",
+                                "<p:write/>",
+                            "</D:privilege>",
+                        "</D:grant>",
+                    "</D:ace>",
+                    "<D:ace>",
+                        "<D:principal>",
+                            "<D:href>Viewer</D:href>",
+                        "</D:principal>",
+                        "<D:grant>",
+                            "<D:privilege>",
+                                "<p:read/>",
+                            "</D:privilege>",
+                        "</D:grant>",
+                    "</D:ace>",
+                "</D:acl>"
+        ].join("");
+        var contentType = "application/json";
+
+        return _httpPOSTMethod(url, headers, contentType, body);
     };
 
     var _createLogoutRule = function(cellname, token) {
@@ -277,7 +226,7 @@ exports.adapterX = (function() {
         var httpClient = new _p.extension.HttpClient();
         var response = httpClient.post(url, headers, contentType, body);
         var httpCode = parseInt(response.status);
-        if (httpCode !== 201) {
+        if (httpCode !== 201 && httpCode !== 200) {
             // Personium exception
             var err = [
                 "io.personium.client.DaoException: ",
