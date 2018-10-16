@@ -43,8 +43,6 @@ exports.adapterX = (function() {
     adapter.deleteUser = function(username) {
         var cellname = adapter.cellName(username);
 
-        _p.as('client').cell().box().odata("OData").entitySet("directory").del(cellname);
-
         // ********Get Unit Admin********
         var accJson = adapter.accInfo.UNIT_ADMIN_INFO;
         var accessor = _p.as(accJson);
