@@ -1,6 +1,6 @@
 function(request) {
     try {
-        reqLib.personium.validateRequestMethod(["POST"], request);
+        reqLib.personium.validateRequestMethod(["POST", "DELETE"], request);
 
         switch(request.method) {
             case "GET":
