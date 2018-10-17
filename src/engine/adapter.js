@@ -48,7 +48,11 @@ exports.adapterX = (function() {
         var accessor = _p.as(accJson);
         var targetUnitUrl = adapter.accInfo.UNIT_URL;
         var unit = accessor.unit(targetUnitUrl);
-        unit.ctl.cell.core.recursiveDelete(cellname);
+        try {
+            unit.ctl.cell.core.recursiveDelete(cellname);
+        } catch (e) {
+            throw new _p.PersoniumException(e.message);
+        }
     };
 
     var _retrieveAttr = function (mainBox, key){
@@ -132,7 +136,7 @@ exports.adapterX = (function() {
         box1.odata(CREATE_ODATA_NAME1).schema.property.create({Name:"UserId","_EntityType.Name":CREATE_ODATA_ENTITY_NAME1,Type:"Edm.Int32",Nullable:false,DefaultValue:0});
         // create Property for Entity Type 2
         box1.odata(CREATE_ODATA_NAME2).schema.property.create({Name:"UserId","_EntityType.Name":CREATE_ODATA_ENTITY_NAME2,Type:"Edm.Int32",Nullable:false,DefaultValue:0});
-
+        
         
         var roleOwner = cell.ctl.role.create({Name: "Owner","_Box.Name": CREATE_BOX_NAME});
         var roleEditor = cell.ctl.role.create({Name: "Editor","_Box.Name": CREATE_BOX_NAME});
@@ -307,8 +311,13 @@ exports.adapterX = (function() {
 
     adapter.resetPassword = function(username, password) {
         var cellname = adapter.cellName(username);
-        var accInfo = adapter.accInfo.APP_CELL_ADMIN_INFO;
-        return _p.as(accInfo).cell(cellname).ctl.account.changePassword(USER_ACCOUNT_NAME, password);
+        // ********Get Unit Admin********
+        var accJson = adapter.accInfo.UNIT_ADMIN_INFO;
+        var accessor = _p.as(accJson);
+        var targetUnitUrl = adapter.accInfo.UNIT_URL;
+        var unit = accessor.unit(targetUnitUrl);
+        
+        return unit.ctl.cell.retrieve(cellname).ctl.account.changePassword(USER_ACCOUNT_NAME, password);
     };
 
     adapter.cellName = function(username) {
