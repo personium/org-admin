@@ -1,18 +1,18 @@
 exports.adapterX = (function() {
     var adapter = adapter || {};
 
-    const USER_CELL_PREFIX = "***";
+    const USER_CELL_PREFIX = "***"; // for example: "-u"
 
-    const USER_ACCOUNT_NAME = "***";
+    const USER_ACCOUNT_NAME = "***"; // for example: "me"
 
-    const CREATE_BOX_NAME = "***";
-    const CREATE_BOX_SCHEMA_URL = "***";
+    const CREATE_BOX_NAME = "***"; // for example: "tutorial"
+    const CREATE_BOX_SCHEMA_URL = "***"; // for example: https://demo.personium.io/appCellName/ or https://appCellName.demo.personium.io/
 
-    const CREATE_ODATA_NAME1 = "***";
-    const CREATE_ODATA_NAME2 = "***";
+    const CREATE_ODATA_NAME1 = "***"; // for example: "T_Question"
+    const CREATE_ODATA_NAME2 = "***"; // for example: "T_Answer"
 
-    const CREATE_ODATA_ENTITY_NAME1 = "**";
-    const CREATE_ODATA_ENTITY_NAME2 = "**";
+    const CREATE_ODATA_ENTITY_NAME1 = "***"; // for example: "Question"
+    const CREATE_ODATA_ENTITY_NAME2 = "***"; // for example: "Answer"
 
     // Personium Unit's and App Cell's authentication information
     adapter.accInfo = require("acc_info").accInfo;
@@ -38,21 +38,6 @@ exports.adapterX = (function() {
             throw new _p.PersoniumException(err);
         };
         return reqLib.adapter.getDataTableOnUserCell(username, type).create(data);
-    };
-
-    adapter.deleteUser = function(username) {
-        var cellname = adapter.cellName(username);
-
-        // ********Get Unit Admin********
-        var accJson = adapter.accInfo.UNIT_ADMIN_INFO;
-        var accessor = _p.as(accJson);
-        var targetUnitUrl = adapter.accInfo.UNIT_URL;
-        var unit = accessor.unit(targetUnitUrl);
-        try {
-            unit.ctl.cell.core.recursiveDelete(cellname);
-        } catch (e) {
-            throw new _p.PersoniumException(e.message);
-        }
     };
 
     var _retrieveAttr = function (mainBox, key){
@@ -96,10 +81,7 @@ exports.adapterX = (function() {
         var cellname = adapter.cellName(params.username);
 
         // ********Get Unit Admin********
-        var accJson = adapter.accInfo.UNIT_ADMIN_INFO;
-        var accessor = _p.as(accJson);
-        var targetUnitUrl = adapter.accInfo.UNIT_URL;
-        var unit = accessor.unit(targetUnitUrl);
+        var unit = _getUnitAdmin();
         
         // ********Create Cell********
         var cell = unit.ctl.cell.create({Name: cellname});
@@ -136,7 +118,6 @@ exports.adapterX = (function() {
         box1.odata(CREATE_ODATA_NAME1).schema.property.create({Name:"UserId","_EntityType.Name":CREATE_ODATA_ENTITY_NAME1,Type:"Edm.Int32",Nullable:false,DefaultValue:0});
         // create Property for Entity Type 2
         box1.odata(CREATE_ODATA_NAME2).schema.property.create({Name:"UserId","_EntityType.Name":CREATE_ODATA_ENTITY_NAME2,Type:"Edm.Int32",Nullable:false,DefaultValue:0});
-        
         
         var roleOwner = cell.ctl.role.create({Name: "Owner","_Box.Name": CREATE_BOX_NAME});
         var roleEditor = cell.ctl.role.create({Name: "Editor","_Box.Name": CREATE_BOX_NAME});
@@ -308,16 +289,38 @@ exports.adapterX = (function() {
         var accInfo = adapter.accInfo.APP_CELL_ADMIN_INFO;
         return _p.as(accInfo).cell(cellname).box(type).odata("odata").entitySet("data");
     };
+    
+    adapter.deleteUser = function(username) {
+        var cellname = adapter.cellName(username);
+
+        // ********Get Unit Admin********
+        var unit = _getUnitAdmin();
+        try {
+            unit.ctl.cell.core.recursiveDelete(cellname);
+        } catch (e) {
+            throw new _p.PersoniumException(e.message);
+        }
+    };
 
     adapter.resetPassword = function(username, password) {
         var cellname = adapter.cellName(username);
+        
         // ********Get Unit Admin********
+        var unit = _getUnitAdmin();
+        try {
+            unit.ctl.cell.retrieve(cellname).ctl.account.changePassword(USER_ACCOUNT_NAME, password)
+        } catch (e) {
+            throw new _p.PersoniumException(e.message);
+        }
+    };
+    
+    var _getUnitAdmin = function() {
         var accJson = adapter.accInfo.UNIT_ADMIN_INFO;
         var accessor = _p.as(accJson);
         var targetUnitUrl = adapter.accInfo.UNIT_URL;
         var unit = accessor.unit(targetUnitUrl);
         
-        return unit.ctl.cell.retrieve(cellname).ctl.account.changePassword(USER_ACCOUNT_NAME, password);
+        return unit;
     };
 
     adapter.cellName = function(username) {
