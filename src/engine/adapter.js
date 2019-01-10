@@ -1,18 +1,18 @@
 exports.adapterX = (function() {
     var adapter = adapter || {};
 
-    const USER_CELL_PREFIX = "***";
+    const USER_CELL_PREFIX = "***"; // for example: "-u"
 
-    const USER_ACCOUNT_NAME = "***";
+    const USER_ACCOUNT_NAME = "***"; // for example: "me"
 
-    const CREATE_BOX_NAME = "***";
-    const CREATE_BOX_SCHEMA_URL = "***";
+    const CREATE_BOX_NAME = "***"; // for example: "tutorial"
+    const CREATE_BOX_SCHEMA_URL = "***"; // for example: https://demo.personium.io/appCellName/ or https://appCellName.demo.personium.io/
 
-    const CREATE_ODATA_NAME1 = "***";
-    const CREATE_ODATA_NAME2 = "***";
+    const CREATE_ODATA_NAME1 = "***"; // for example: "T_Question"
+    const CREATE_ODATA_NAME2 = "***"; // for example: "T_Answer"
 
-    const CREATE_ODATA_ENTITY_NAME1 = "**";
-    const CREATE_ODATA_ENTITY_NAME2 = "**";
+    const CREATE_ODATA_ENTITY_NAME1 = "***"; // for example: "Question"
+    const CREATE_ODATA_ENTITY_NAME2 = "***"; // for example: "Answer"
 
     // Personium Unit's and App Cell's authentication information
     adapter.accInfo = require("acc_info").accInfo;
